@@ -65,4 +65,4 @@ RUN php artisan optimize:clear || true
 EXPOSE 10000
 
 # Start Laravel server for Render
-CMD ["php-fpm"]
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
