@@ -43,4 +43,4 @@ RUN php artisan config:clear || true && \
     php artisan route:clear || true && \
     php artisan view:clear || true
 
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=$PORT"]
+CMD ["php-fpm"]
