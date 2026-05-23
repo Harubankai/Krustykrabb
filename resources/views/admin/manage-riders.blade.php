@@ -279,11 +279,11 @@
                     <div class="form-row">
                         <label for="riderName">Name</label>
                         <input type="text" id="riderName" name="riderName"
-                            oninput="this.value = this.value.replace(/[0-9]/g, '');" required>
+                            oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '');" required>
                     </div>
                     <div class="form-row">
                         <label for="riderEmail">Email</label>
-                        <input type="email" id="riderEmail" name="riderEmail" autocomplete="email" required>
+                        <input type="email" id="riderEmail" name="riderEmail" autocomplete="email" required oninput="this.value = this.value.replace(/[^a-zA-Z0-9@.]/g, '');">
                     </div>
                     <div class="form-row">
                         <label for="riderTempPassword">Temporary Password</label>
@@ -311,11 +311,13 @@
                     </div>
                     <div class="form-row">
                         <label for="riderVehicle">Vehicle</label>
-                        <input type="text" id="riderVehicle" name="riderVehicle" required>
+                         <input type="text" id="riderVehicle" name="riderVehicle" required oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '');">
+                         <div id="riderVehicleError" style="color: #ff4d4d; font-size: 0.85rem; margin-top: 4px; display: none;">Vehicle must contain only letters, numbers and spaces.</div>
                     </div>
                     <div class="form-row">
                         <label for="riderAddress">Address</label>
-                        <input type="text" id="riderAddress" name="riderAddress" required>
+                         <input type="text" id="riderAddress" name="riderAddress" required oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '');">
+                         <div id="riderAddressError" style="color: #ff4d4d; font-size: 0.85rem; margin-top: 4px; display: none;">Address must contain only letters, numbers and spaces.</div>
                     </div>
                     <div class="form-row">
                         <label for="riderProfilePicture">Profile Photo <span
@@ -345,7 +347,7 @@
                     <div class="form-row">
                         <label for="editRiderName">Name</label>
                         <input type="text" id="editRiderName" name="riderName"
-                            oninput="this.value = this.value.replace(/[0-9]/g, '');" required>
+                            oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '');" required>
                     </div>
                     <div class="form-row">
                         <label for="editRiderPhone">Phone</label>
@@ -358,11 +360,11 @@
                     </div>
                     <div class="form-row">
                         <label for="editRiderVehicle">Vehicle</label>
-                        <input type="text" id="editRiderVehicle" name="riderVehicle" required>
+                        <input type="text" id="editRiderVehicle" name="riderVehicle" required oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '');">
                     </div>
                     <div class="form-row">
                         <label for="editRiderAddress">Address</label>
-                        <input type="text" id="editRiderAddress" name="riderAddress" required>
+                        <input type="text" id="editRiderAddress" name="riderAddress" required oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '');">
                     </div>
                     <div class="form-row">
                         <label for="editRiderStatus">Status</label>
@@ -688,6 +690,51 @@
 
         addRiderForm.addEventListener('submit', e => {
             e.preventDefault();
+
+             const nameInput = document.getElementById('riderName');
+             const nameError = document.createElement('div');
+             nameError.style.color = '#ff4d4d';
+             nameError.style.fontSize = '0.85rem';
+             nameError.style.marginTop = '4px';
+             if (!/^[A-Za-z\s]+$/.test(nameInput.value.trim())) {
+                 if (!document.getElementById('riderNameError')) {
+                     const err = document.createElement('div');
+                     err.id = 'riderNameError';
+                     err.textContent = 'Name must contain only letters and spaces.';
+                     err.style.color = '#ff4d4d';
+                     err.style.fontSize = '0.85rem';
+                     err.style.marginTop = '4px';
+                     nameInput.parentNode.appendChild(err);
+                 }
+                 return;
+             } else {
+                 const err = document.getElementById('riderNameError');
+                 if (err) err.remove();
+             }
+
+             const vehicleInput = document.getElementById('riderVehicle');
+             if (!/^[A-Za-z0-9\s]+$/.test(vehicleInput.value.trim())) {
+                 const errDiv = document.getElementById('riderVehicleError');
+                 errDiv.style.display = 'block';
+                 vehicleInput.style.borderColor = '#ff4d4d';
+                 return;
+             } else {
+                 const errDiv = document.getElementById('riderVehicleError');
+                 errDiv.style.display = 'none';
+                 vehicleInput.style.borderColor = '';
+             }
+
+             const addressInput = document.getElementById('riderAddress');
+             if (!/^[A-Za-z0-9\s]+$/.test(addressInput.value.trim())) {
+                 const errDiv = document.getElementById('riderAddressError');
+                 errDiv.style.display = 'block';
+                 addressInput.style.borderColor = '#ff4d4d';
+                 return;
+             } else {
+                 const errDiv = document.getElementById('riderAddressError');
+                 errDiv.style.display = 'none';
+                 addressInput.style.borderColor = '';
+             }
 
             const passwordInput = document.getElementById('riderTempPassword');
             const passwordError = document.getElementById('riderPasswordError');

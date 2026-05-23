@@ -147,11 +147,12 @@ class UserController extends Controller
         }
 
         $data = $request->validate([
-            'name'            => 'required|max:255',
-            'email'           => 'required|email|unique:user,email',
-            'password'        => 'required|min:6',
-            'phone'           => 'nullable|max:50',
-            'vehicle'         => 'nullable|max:100',
+            'name' => 'required|string|max:255|regex:/^[A-Za-z\s]+$/',
+            'email' => 'required|email|regex:/^[A-Za-z0-9]+@[A-Za-z0-9]+\.[A-Za-z]{2,}$/i|unique:user,email',
+            'password' => 'required|min:6',
+            'phone' => 'required|regex:/^[0-9]{7,15}$/',
+            'vehicle' => 'nullable|regex:/^[A-Za-z0-9\s]+$/|max:100',
+            'address' => 'nullable|regex:/^[A-Za-z0-9\s]+$/|max:500',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
         ]);
 
@@ -244,11 +245,11 @@ class UserController extends Controller
         }
 
         $data = $request->validate([
-            'name'            => 'required|max:255',
-            'phone'           => 'nullable|max:50',
-            'address'         => 'nullable|max:500',
-            'vehicle'         => 'nullable|max:100',
-            'status'          => 'nullable|string|in:Online,Offline,On Delivery',
+            'name' => 'required|string|max:255|regex:/^[A-Za-z\s]+$/',
+            'phone' => 'nullable|max:50',
+            'address' => 'nullable|regex:/^[A-Za-z0-9\s]+$/|max:500',
+            'vehicle' => 'nullable|regex:/^[A-Za-z0-9\s]+$/|max:100',
+            'status' => 'nullable|string|in:Online,Offline,On Delivery',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
         ]);
 
@@ -347,10 +348,10 @@ class UserController extends Controller
 
         // Validate rider-specific fields
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|regex:/^[A-Za-z\s]+$/',
             'email' => 'required|email|unique:user,email,' . $user->id,
             'phone' => 'nullable|string|max:50',
-            'address' => 'nullable|string|max:500',
+            'address' => 'nullable|regex:/^[A-Za-z0-9\s]+$/|max:500',
             'emergency' => 'nullable|string|max:50',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
