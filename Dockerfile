@@ -12,7 +12,7 @@ RUN npm install --legacy-peer-deps
 # Copy project files
 COPY . .
 
-# Build Vite assets
+# Build frontend assets
 RUN npm run build
 
 
@@ -36,10 +36,10 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copy Laravel project
+# Copy Laravel project files
 COPY . .
 
-# Copy built Vite assets
+# Copy Vite build output
 COPY --from=frontend /app/public/build ./public/build
 
 # Install PHP dependencies
@@ -48,19 +48,21 @@ RUN composer install --no-dev --optimize-autoloader
 # Create SQLite database file
 RUN mkdir -p database && touch database/database.sqlite
 
-# Ensure Laravel cache folders exist
-RUN mkdir -p storage/framework/cache \
+# Ensure Laravel storage/cache folders exist
+RUN mkdir -p \
+    storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
     bootstrap/cache
 
-# Clear Laravel caches safely
-RUN php artisan config:clear || true && \
-    php artisan route:clear || true && \
-    php artisan view:clear || true
+# Fix permissions for Laravel sessions/cache
+RUN chmod -R 775 storage bootstrap/cache
+
+# Clear all Laravel cached config/routes/views
+RUN php artisan optimize:clear || true
 
 # Expose Render port
 EXPOSE 10000
 
-# Start Laravel server
+# Start Laravel server for Render
 CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
