@@ -3,23 +3,19 @@ FROM node:20 AS frontend
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 
-# Install frontend dependencies
 RUN npm install --legacy-peer-deps
 
-# Copy project files
 COPY . .
 
-# Build frontend assets
 RUN npm run build
 
 
 # Stage 2 - Laravel + PHP
 FROM php:8.2-cli
 
-# Install required system packages + SQLite support
+# Install system dependencies + SQLite support
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -36,33 +32,38 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copy Laravel project files
+# Copy project
 COPY . .
-
-# Copy Vite build output
-COPY --from=frontend /app/public/build ./public/build
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Create SQLite database file
-RUN mkdir -p database && touch database/database.sqlite
+# Create SQLite database
+RUN mkdir -p database \
+    && touch database/database.sqlite \
+    && chmod 664 database/database.sqlite
 
-# Ensure Laravel storage/cache folders exist
+# Copy Vite build output
+COPY --from=frontend /app/public/build ./public/build
+
+# Ensure Laravel required folders exist
 RUN mkdir -p \
     storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
     bootstrap/cache
 
-# Fix permissions for Laravel sessions/cache
-RUN chmod -R 775 storage bootstrap/cache
+# Fix permissions (VERY important for 500 errors)
+RUN chmod -R 775 storage bootstrap/cache database
 
-# Clear all Laravel cached config/routes/views
+# Clear and optimize Laravel
 RUN php artisan optimize:clear || true
+
+# IMPORTANT: run migrations (fixes login/register 500)
+RUN php artisan migrate --force || true
 
 # Expose Render port
 EXPOSE 10000
 
-# Start Laravel server for Render
+# Start Laravel server (Render compatible)
 CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
