@@ -54,10 +54,16 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache && \
 # Expose port
 EXPOSE 8000
 
-# Create startup script
+# Create startup script with fresh migration and seeding
 RUN echo '#!/bin/sh\n\
-php artisan config:cache\n\
+set -e\n\
+echo "Running migrations..."\n\
 php artisan migrate --force\n\
+echo "Running seeders..."\n\
+php artisan db:seed --force\n\
+echo "Clearing cache..."\n\
+php artisan config:cache\n\
+echo "Starting Laravel server..."\n\
 php artisan serve --host=0.0.0.0 --port=8000\n\
 ' > /app/start.sh && chmod +x /app/start.sh
 
