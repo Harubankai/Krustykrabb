@@ -10,21 +10,28 @@ RUN apk add --no-cache \
     unzip \
     git \
     npm \
-    postgresql-dev
+    postgresql-dev \
+    oniguruma-dev \
+    libxml2-dev
 
 # Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
+RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
-    gd \
     bcmath \
     ctype \
     json \
     mbstring \
     openssl \
     tokenizer \
-    xml
+    xml \
+    curl
+
+# Install GD with freetype and jpeg support
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
