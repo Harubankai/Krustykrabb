@@ -1,6 +1,6 @@
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies
+# Install system dependencies and build tools
 RUN apk add --no-cache \
     curl \
     libpng-dev \
@@ -12,15 +12,16 @@ RUN apk add --no-cache \
     npm \
     postgresql-dev \
     oniguruma-dev \
-    libxml2-dev
+    libxml2-dev \
+    autoconf \
+    automake \
+    build-base
 
-# Install PHP extensions (only the ones that exist and are needed)
+# Install PHP extensions
 RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
-    bcmath \
     mbstring \
-    tokenizer \
     xml
 
 # Install GD with freetype and jpeg support
@@ -50,7 +51,7 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache && \
 # Expose port
 EXPOSE 8000
 
-# Create startup script with fresh migration and seeding
+# Create startup script with migration and seeding
 RUN echo '#!/bin/sh\n\
 set -e\n\
 echo "Running migrations..."\n\
