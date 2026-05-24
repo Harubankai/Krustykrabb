@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env.example
+.editorconfig
+/storage/logs/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/framework/cache/*
+/bootstrap/cache/*
+/node_modules
+/vendor
+.DS_Store
+Thumbs.db
+*.log
+.env.*.php
+.phpunit.result.cache
