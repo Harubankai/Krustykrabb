@@ -1,0 +1,53 @@
+services:
+  - type: web
+    name: krustykrabb
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: APP_NAME
+        value: KRUSTY CRAB
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        scope: RUN_AND_BUILD
+        value: https://krustykrabb.onrender.com
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        scope: RUN_AND_BUILD
+        fromDatabase:
+          name: krustykrabb-db
+          property: host
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        scope: RUN_AND_BUILD
+        fromDatabase:
+          name: krustykrabb-db
+          property: database
+      - key: DB_USERNAME
+        scope: RUN_AND_BUILD
+        fromDatabase:
+          name: krustykrabb-db
+          property: user
+      - key: DB_PASSWORD
+        scope: RUN_AND_BUILD
+        fromDatabase:
+          name: krustykrabb-db
+          property: password
+      - key: APP_KEY
+        scope: RUN_AND_BUILD
+        value: base64:PQtrtyxmxJjFy1DnyD/Azk5onVPCtvXNHSZU/25Arsc=
+      - key: LOG_LEVEL
+        value: debug
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
