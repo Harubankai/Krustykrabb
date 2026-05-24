@@ -1,6 +1,6 @@
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies and build tools
+# Install system dependencies
 RUN apk add --no-cache \
     curl \
     libpng-dev \
@@ -10,21 +10,20 @@ RUN apk add --no-cache \
     unzip \
     git \
     npm \
-    postgresql-dev \
+    mysql-client \
     oniguruma-dev \
-    libxml2-dev \
-    autoconf \
-    automake \
-    build-base
+    libxml2-dev
 
 # Install PHP extensions
 RUN docker-php-ext-install \
     pdo \
-    pdo_pgsql \
+    pdo_mysql \
+    bcmath \
     mbstring \
+    tokenizer \
     xml
 
-# Install GD with freetype and jpeg support
+# Install GD support
 RUN docker-php-ext-configure gd \
     --with-freetype \
     --with-jpeg \
@@ -35,31 +34,32 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Copy application files
+# Copy app files
 COPY . .
 
 # Install PHP dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-# Install npm dependencies and build Vite
+# Install frontend dependencies and build Vite
 RUN npm install && npm run build
 
-# Set permissions
+# Permissions
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache && \
     chmod -R 775 /app/storage /app/bootstrap/cache
 
-# Expose port
+# Expose Render port
 EXPOSE 8000
 
-# Create startup script with migration and seeding
+# Startup script
 RUN echo '#!/bin/sh\n\
 set -e\n\
+echo "Clearing cache..."\n\
+php artisan config:clear\n\
+php artisan cache:clear\n\
+php artisan route:clear\n\
+php artisan view:clear\n\
 echo "Running migrations..."\n\
 php artisan migrate --force\n\
-echo "Running seeders..."\n\
-php artisan db:seed --force\n\
-echo "Clearing cache..."\n\
-php artisan config:cache\n\
 echo "Starting Laravel server..."\n\
 php artisan serve --host=0.0.0.0 --port=8000\n\
 ' > /app/start.sh && chmod +x /app/start.sh
