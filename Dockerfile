@@ -14,18 +14,14 @@ RUN apk add --no-cache \
     oniguruma-dev \
     libxml2-dev
 
-# Install PHP extensions
+# Install PHP extensions (only the ones that exist and are needed)
 RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
     bcmath \
-    ctype \
-    json \
     mbstring \
-    openssl \
     tokenizer \
-    xml \
-    curl
+    xml
 
 # Install GD with freetype and jpeg support
 RUN docker-php-ext-configure gd \
