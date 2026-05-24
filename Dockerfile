@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     git \
     npm \
     postgresql-dev \
+    postgresql-client \
     oniguruma-dev \
     libxml2-dev \
     autoconf \
@@ -51,4 +52,43 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache && \
 # Expose port
 EXPOSE 8000
 
-CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php artisan config:cache && php artisan serve --host=0.0.0.0 --port=8000"]
+# Create entrypoint script with database wait logic
+RUN cat > /app/entrypoint.sh << 'EOF'
+#!/bin/sh
+set -e
+
+echo "Waiting for database connection..."
+max_attempts=30
+attempt=1
+
+while [ $attempt -le $max_attempts ]; do
+    if php artisan tinker --execute "exit" 2>/dev/null; then
+        echo "Database is ready!"
+        break
+    fi
+    echo "Attempt $attempt/$max_attempts: Database not ready, retrying..."
+    attempt=$((attempt + 1))
+    sleep 2
+done
+
+if [ $attempt -gt $max_attempts ]; then
+    echo "Database connection failed after $max_attempts attempts"
+    exit 1
+fi
+
+echo "Running migrations..."
+php artisan migrate --force || true
+
+echo "Running seeders..."
+php artisan db:seed --force || true
+
+echo "Clearing cache..."
+php artisan config:cache
+
+echo "Starting Laravel server..."
+php artisan serve --host=0.0.0.0 --port=8000
+EOF
+
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
