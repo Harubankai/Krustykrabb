@@ -9,16 +9,17 @@ RUN apk add --no-cache \
     unzip \
     git \
     npm \
-    mysql-client \
     oniguruma-dev \
     libxml2-dev \
     autoconf \
     automake \
-    build-base
+    build-base \
+    postgresql-client \
+    postgresql-dev
 
 RUN docker-php-ext-install \
     pdo \
-    pdo_mysql \
+    pdo_pgsql \
     mbstring \
     xml
 
@@ -47,16 +48,13 @@ RUN cat > /app/entrypoint.sh << 'EOF'
 set -e
 
 echo "Clearing cache..."
-php artisan config:clear || true
-php artisan cache:clear || true
-php artisan route:clear || true
-php artisan view:clear || true
-
-echo "Caching config..."
-php artisan config:cache || true
+php artisan optimize:clear || true
 
 echo "Running migrations..."
 php artisan migrate --force || true
+
+echo "Caching config..."
+php artisan config:cache || true
 
 echo "Starting Laravel..."
 php artisan serve --host=0.0.0.0 --port=8000
